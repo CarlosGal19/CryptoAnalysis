@@ -1,0 +1,3 @@
+# CryptoAnalysis
+
+'App' which take and gives information about the Top 10 of cryptocurrencies according to https://coinmarketcap.com/es/coins/. It shows information as: Name, current price, change in the last 24 hrs., volume (a measure of how much of a cryptocurrency was traded in the last 24 hours.) and market capitalization (the sum of all individual cryptoasset market capitalizations that meet the requirements outlined in the website.). I used BeautifulSoup4 and Request for getting the information, Pandas, Numpy and plotmatlib for analyze the information, sqlite for save the information which will be visualized with the help of FastAPI, Pydantic and Uvicorn.
