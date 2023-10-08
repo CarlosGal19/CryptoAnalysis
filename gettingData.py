@@ -2,19 +2,19 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import pandas as pd
-
+import numpy as np
 
 def insert_data(soup):
 
     data=[]
 
     names=[]
-    prices=[]
-    capacities=[]
-    volumes=[]
-    history_hour=[]
-    history_day=[]
-    history_week=[]
+    prices=np.array([])
+    capacities=np.array([])
+    volumes=np.array([])
+    history_hour=np.array([])
+    history_day=np.array([])
+    history_week=np.array([])
 
     # Getting names
 
@@ -27,8 +27,9 @@ def insert_data(soup):
     # Gettin prices, volumes and capacities
 
     elements = soup.find_all('td', style='text-align:end')
+    elements_volume = soup.find_all('p', class_='sc-4984dd93-0 jZrMxO font_weight_500')
 
-    values=[0]
+    values=np.array([0])
 
     for item in elements:
 
@@ -37,28 +38,32 @@ def insert_data(soup):
         if content.startswith('$'):
             content=content[1:]
             content=content.replace(',','')
-            values.append(content)
+            values=np.append(values,content)
 
 
     for i, element in enumerate(values):
         if i%3==0:
-            if i>0:
-                element=element[:-4]
-            volumes.append(int(element))
+            volumes=np.append(volumes,element)
+            volumes=np.delete(volumes,0)
         elif i%3==1:
-            prices.append(float(element))
+            prices=np.append(prices, float(element))
         else:
             cadena=element.split('$')
             element=cadena[1]
-            capacities.append(int(element))
+            capacities=np.append(capacities,element)
 
-    volumes.remove(0)
+
+    for volume in elements_volume:
+        insert=volume.get_text()
+        insert=insert[1:]
+        insert=insert.replace(',','')
+        volumes=np.append(volumes, int(insert))
 
     # Getting history in last 24 hrs
 
     markets = soup.find_all('td', style='text-align:end')
 
-    histories=[0]
+    histories=np.array([0])
 
     for market in markets:
 
@@ -68,23 +73,23 @@ def insert_data(soup):
             change = market.get_text(strip=True)
             if change.endswith('%'):
                 number = -float(change[:-1])
-                histories.append(number)
+                histories=np.append(histories,number)
 
         elif change.startswith('<td style="text-align:end"><span class="sc-d55c02b-0 iwhBxy"><span class="icon-Caret-up"'):
             change = market.get_text(strip=True)
             if change.endswith('%'):
                 number = float(change[:-1])
-                histories.append(number)
+                histories=np.append(histories,number)
 
     for i,history in enumerate(histories):
         if i%3==0:
-            history_week.append(history)
+            history_week=np.append(history_week, history)
         elif i%3==1:
-            history_hour.append(history)
+            history_hour=np.append(history_hour, history)
         else:
-            history_day.append(history)
+            history_day=np.append(history_day, history)
 
-    history_week.remove(0)
+    history_week=np.delete(history_week,0)
 
     min_length = min(len(names), len(prices), len(volumes), len(capacities), len(history_hour), len(history_day), len(history_week))
 
@@ -100,8 +105,9 @@ def insert_data(soup):
         })
 
     df = pd.DataFrame(data)
-    current_date = datetime.now().date()
-    df.to_csv(f"C:\\Users\\carlo\\OneDrive\\Escritorio\\CryptoAnalysis\\Data\\Data_{current_date}", index=False)
+    current_time=datetime.now()
+    format = "%Y-%m-%d_%H-%M-%S"
+    df.to_csv(f"C:\\Users\\carlo\\OneDrive\\Escritorio\\CryptoAnalysis\\Data\\Data_{current_time.strftime(format)}", index=False)
 
 
 def get_content(url):
