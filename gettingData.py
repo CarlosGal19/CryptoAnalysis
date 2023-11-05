@@ -68,14 +68,14 @@ def insert_data(soup):                      # Function which insert the data in 
     for market in markets:
 
         change=str(market)
-        # If change contains the class='icon-Caret-down' a negative value is recorded
-        if change.startswith('<td style="text-align:end"><span class="sc-d55c02b-0 gUnzUB"><span class="icon-Caret-down"'):
+        # If change includes the string 'Caret-down, a negative value is saved'
+        if ('Caret-down' in change):
             change = market.get_text(strip=True)
             if change.endswith('%'):
                 number = -float(change[:-1])
                 histories=np.append(histories,number)
-        # If change contains the class='icon-Caret-up' a positive value is saved
-        elif change.startswith('<td style="text-align:end"><span class="sc-d55c02b-0 iwhBxy"><span class="icon-Caret-up"'):
+        # If change includes the string 'Caret-up' a positive value is saved
+        elif ('Caret-up' in change):
             change = market.get_text(strip=True)
             if change.endswith('%'):
                 number = float(change[:-1])
